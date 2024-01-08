@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import httpService from "../../services/http-service";
 import { useAuth } from "../Auth/AuthContext";
+import fakeDbService from "../../services/fakeDatabase/fake-database-service";
 
 interface Album {
   id: number;
@@ -57,13 +58,13 @@ const AddPhotoComponent: React.FC<AddPhotoComponentProps> = ({
 
   const handleAddPhoto = async () => {
     try {
-      const xd = await httpService.post("/photos", {
+      const photo = {
         albumId: selectedAlbum?.id,
         title: photoTitle,
-        url: "https://via.placeholder.com/600/392537",
-        thumbnailUrl: "https://via.placeholder.com/150/392537",
-      });
-      console.log(xd);
+        url: "https://via.placeholder.com/600/92c952",
+        thumbnailUrl: "https://via.placeholder.com/150/92c952",
+      };
+      await fakeDbService.post("photos", photo);
       onClose();
     } catch (error) {
       console.error("Error adding photo", error);
