@@ -57,7 +57,3 @@ code {
   display: flex;
   justify-content: space-between;
 }
-
-.greeting-text {
-  text-align: right;
-}

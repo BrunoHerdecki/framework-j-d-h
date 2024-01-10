@@ -26,7 +26,7 @@ const LoginPage = () => {
       if (response.data.length === 1) {
         login(response.data[0]);
       } else {
-        console.log("User not found");
+        console.error("User not found");
       }
     } catch (error) {
       console.error("Error during login", error);

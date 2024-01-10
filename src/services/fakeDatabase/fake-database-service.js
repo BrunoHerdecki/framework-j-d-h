@@ -17,6 +17,7 @@ class FakeDatabaseService {
   }
 
   async post(table, object) {
+    object.fakeDb = true;
     if (!this.db[table]) {
       this.db[table] = [];
     }
@@ -62,6 +63,22 @@ class FakeDatabaseService {
       return tableData;
     }
     return tableData.find((item) => item.id === id);
+  }
+
+  delete(table, id) {
+    const tableData = this.db[table];
+    if (!tableData) {
+      return;
+    }
+
+    const itemIndex = tableData.findIndex((item) => item.id === id);
+
+    if (itemIndex === -1) {
+      return;
+    }
+
+    this.db[table].splice(itemIndex, 1);
+    this.saveToLocalStorage();
   }
 }
 

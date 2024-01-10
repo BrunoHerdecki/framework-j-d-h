@@ -5,11 +5,11 @@ import {
   Paper,
   Select,
   MenuItem,
-  Dialog,
   DialogContent,
 } from "@mui/material";
 import httpService from "../../services/http-service";
 import { SelectChangeEvent } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface Album {
   userId: number;
@@ -31,8 +31,8 @@ const AlbumsComponent: React.FC = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState("");
-  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const itemsPerPage = 12;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,29 +52,17 @@ const AlbumsComponent: React.FC = () => {
     fetchData();
   }, []);
 
-  const fetchPhotosForAlbum = async (albumId: number) => {
-    try {
-      const response = await httpService.get(`/photos?albumId=${albumId}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching photos for album", error);
-      return [];
-    }
-  };
-
   const handleUserChange = (event: SelectChangeEvent<string>) => {
     const selectedUserId = event.target.value;
     setSelectedUser("");
-    setSelectedAlbum(null);
     setPage(1);
     setSelectedUser(selectedUserId);
   };
 
   const handleAlbumClick = async (album: Album) => {
-    setSelectedAlbum(album);
-
-    const photosForAlbum = await fetchPhotosForAlbum(album.id);
-    setPhotos(photosForAlbum);
+    const params = new URLSearchParams();
+    params.append("albumIds", album.id.toString());
+    navigate(`/photos?${params.toString()}`);
   };
 
   const filteredAlbums = selectedUser
@@ -110,9 +98,11 @@ const AlbumsComponent: React.FC = () => {
                 className="img-item alb-item"
               >
                 <div className="img-title">{album.title}</div>
-                {album.id === selectedAlbum?.id ? (
-                  <DialogContent>
-                    {photos.slice(0, 4).map((photo) => (
+                <DialogContent>
+                  {photos
+                    .filter((photo) => photo.albumId === album.id)
+                    .slice(0, 4)
+                    .map((photo) => (
                       <img
                         src={photo.thumbnailUrl}
                         alt={photo.title}
@@ -120,22 +110,7 @@ const AlbumsComponent: React.FC = () => {
                         className="thumbnail"
                       />
                     ))}
-                  </DialogContent>
-                ) : (
-                  <DialogContent>
-                    {photos
-                      .filter((photo) => photo.albumId === album.id)
-                      .slice(0, 4)
-                      .map((photo) => (
-                        <img
-                          src={photo.thumbnailUrl}
-                          alt={photo.title}
-                          key={photo.id}
-                          className="thumbnail"
-                        />
-                      ))}
-                  </DialogContent>
-                )}
+                </DialogContent>
               </Paper>
             </Grid>
           ))}

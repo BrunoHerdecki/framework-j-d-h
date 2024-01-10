@@ -29,6 +29,11 @@ const AddPhotoComponent: React.FC<AddPhotoComponentProps> = ({
   const [albums, setAlbums] = useState<Album[]>([]);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [photoTitle, setPhotoTitle] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageThumbnailUrl, setImageThumbnailUrl] = useState<string>("");
+  const [isImageValid, setIsImageValid] = useState<boolean>(false);
+  const [isImageThumbnailValid, setIsImageThumbnailValid] =
+    useState<boolean>(false);
 
   useEffect(() => {
     const fetchAlbums = async () => {
@@ -45,6 +50,15 @@ const AddPhotoComponent: React.FC<AddPhotoComponentProps> = ({
     fetchAlbums();
   }, [userData]);
 
+  const checkIfImage = (url: string) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => reject(false);
+      img.src = url;
+    });
+  };
+
   const handleAlbumChange = (
     event: React.SyntheticEvent<Element, Event>,
     value: Album | null
@@ -56,16 +70,51 @@ const AddPhotoComponent: React.FC<AddPhotoComponentProps> = ({
     setPhotoTitle(event.target.value);
   };
 
+  const handleImageUrlChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const url = event.target.value;
+    setImageUrl(url);
+
+    try {
+      await checkIfImage(url);
+      setIsImageValid(true);
+    } catch {
+      setIsImageValid(false);
+    }
+  };
+
+  const handleThumbnailUrlUrlChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const url = event.target.value;
+    setImageThumbnailUrl(url);
+
+    try {
+      await checkIfImage(url);
+      setIsImageThumbnailValid(true);
+    } catch {
+      setIsImageThumbnailValid(false);
+    }
+  };
+
   const handleAddPhoto = async () => {
     try {
-      const photo = {
-        albumId: selectedAlbum?.id,
-        title: photoTitle,
-        url: "https://via.placeholder.com/600/92c952",
-        thumbnailUrl: "https://via.placeholder.com/150/92c952",
-      };
-      await fakeDbService.post("photos", photo);
-      onClose();
+      if (
+        selectedAlbum?.id &&
+        photoTitle.trim() &&
+        isImageThumbnailValid &&
+        isImageValid
+      ) {
+        const photo = {
+          albumId: selectedAlbum?.id,
+          title: photoTitle,
+          url: imageUrl,
+          thumbnailUrl: imageThumbnailUrl,
+        };
+        await fakeDbService.post("photos", photo);
+        onClose();
+      }
     } catch (error) {
       console.error("Error adding photo", error);
     }
@@ -94,6 +143,24 @@ const AddPhotoComponent: React.FC<AddPhotoComponentProps> = ({
           onChange={handleTitleChange}
           style={{ marginTop: "16px" }}
         />
+        <TextField
+          label="Image URL"
+          variant="outlined"
+          fullWidth
+          value={imageUrl}
+          onChange={handleImageUrlChange}
+          style={{ marginTop: "16px" }}
+        />
+
+        <TextField
+          label="Image thumbnail URL"
+          variant="outlined"
+          fullWidth
+          value={imageThumbnailUrl}
+          onChange={handleThumbnailUrlUrlChange}
+          style={{ marginTop: "16px" }}
+        />
+
         <Button
           variant="contained"
           color="primary"
@@ -102,6 +169,26 @@ const AddPhotoComponent: React.FC<AddPhotoComponentProps> = ({
         >
           Add Photo
         </Button>
+        <div>
+          {isImageValid && (
+            <img
+              src={imageUrl}
+              alt="Uploaded"
+              style={{ marginTop: "16px", maxWidth: "100%" }}
+            />
+          )}
+          {isImageThumbnailValid && (
+            <img
+              src={imageThumbnailUrl}
+              alt="Uploaded"
+              style={{
+                marginTop: "16px",
+                maxWidth: "100%",
+                marginLeft: "20px",
+              }}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

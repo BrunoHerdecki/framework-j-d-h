@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import httpService from "../../services/http-service";
 import { SelectChangeEvent } from "@mui/material";
+import imageService from "../../services/images/images-service";
 
 interface Image {
   albumId: number;
@@ -18,6 +19,7 @@ interface Image {
   title: string;
   url: string;
   thumbnailUrl: string;
+  fakeDb: boolean;
 }
 
 const ImagesComponent: React.FC = () => {
@@ -33,9 +35,9 @@ const ImagesComponent: React.FC = () => {
     const fetchUsers = async () => {
       try {
         const response = await httpService.get("/users");
-        const imagesResponse = await httpService.get(`/photos`);
+        const images = await imageService.getPhotos();
         setUsers(response.data);
-        setImages(imagesResponse.data);
+        setImages(images);
       } catch (error) {
         console.error("Error fetching users", error);
       }
@@ -44,7 +46,7 @@ const ImagesComponent: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const fetchAlbums = async () => {
+  const fetchPhotos = async () => {
     try {
       if (selectedUser) {
         const response = await httpService.get(
@@ -52,21 +54,12 @@ const ImagesComponent: React.FC = () => {
         );
         const albumIds = response.data.map((album: any) => album.id);
 
-        const fetchImagePromises = albumIds.map(async (albumId: any) => {
-          const imagesResponse = await httpService.get(
-            `/photos?albumId=${albumId}`
-          );
-          return imagesResponse.data;
-        });
-
-        const images = (await Promise.all(fetchImagePromises)).flatMap(
-          (imagesArray) => imagesArray
-        );
+        const images = await imageService.getPhotosByAlbumIds(albumIds);
 
         setImages(images);
       } else {
-        const imagesResponse = await httpService.get(`/photos`);
-        setImages(imagesResponse.data);
+        const images = await imageService.getPhotos();
+        setImages(images);
       }
     } catch (error) {
       console.error("Error fetching images", error);
@@ -79,13 +72,19 @@ const ImagesComponent: React.FC = () => {
   };
 
   const handleFetchImages = () => {
-    fetchAlbums();
+    fetchPhotos();
     setPage(1);
   };
 
   const handleImageClick = (image: Image) => {
     setSelectedImage(image);
     setIsDialogOpen(true);
+  };
+
+  const handleRemove = (image: Image) => {
+    imageService.removePhoto(image.id);
+    const filteredImages = images.filter((x) => x.id !== image.id);
+    setImages(filteredImages);
   };
 
   const handleCloseDialog = () => {
@@ -127,6 +126,17 @@ const ImagesComponent: React.FC = () => {
                 <img src={image.thumbnailUrl} alt={image.title} />
                 <p>{image.title}</p>
               </Paper>
+              <div>
+                {image.fakeDb ? (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleRemove(image)}
+                  >
+                    Remove
+                  </Button>
+                ) : null}
+              </div>
             </Grid>
           ))}
       </Grid>
