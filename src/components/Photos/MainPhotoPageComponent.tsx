@@ -31,8 +31,8 @@ const MainComponent: React.FC = () => {
       <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
         <DialogContent>
           <AddPhotoComponent
-            open={isDialogOpen} // Pass the state variable for open
-            onClose={handleCloseDialog} // Pass the handler function
+            open={isDialogOpen}
+            onClose={handleCloseDialog}
           ></AddPhotoComponent>
         </DialogContent>
       </Dialog>

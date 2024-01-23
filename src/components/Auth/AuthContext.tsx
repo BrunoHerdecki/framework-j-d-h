@@ -1,10 +1,11 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
   ReactNode,
   useEffect,
 } from "react";
+import usersService from "../../services/users/users-service";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -37,12 +38,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const login = (user: any) => {
-    localStorage.setItem("user", JSON.stringify(user));
+    usersService.saveLoggedinUser(user);
     setIsLoggedIn(true);
   };
 
   const userData = () => {
-    return JSON.parse(localStorage.getItem("user") ?? "");
+    return usersService.getLoggedinUser();
   };
 
   const logout = () => {
