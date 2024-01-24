@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import httpService from "../../services/http-service";
 import { SelectChangeEvent } from "@mui/material";
-import imageService from "../../services/images/images-service";
+import photosService from "../../services/images/photos-service";
 
 interface Image {
   albumId: number;
@@ -35,7 +35,7 @@ const ImagesComponent: React.FC = () => {
     const fetchUsers = async () => {
       try {
         const response = await httpService.get("/users");
-        const images = await imageService.getPhotos();
+        const images = await photosService.getPhotos();
         setUsers(response.data);
         setImages(images);
       } catch (error) {
@@ -54,11 +54,11 @@ const ImagesComponent: React.FC = () => {
         );
         const albumIds = response.data.map((album: any) => album.id);
 
-        const images = await imageService.getPhotosByAlbumIds(albumIds);
+        const images = await photosService.getPhotosByAlbumIds(albumIds);
 
         setImages(images);
       } else {
-        const images = await imageService.getPhotos();
+        const images = await photosService.getPhotos();
         setImages(images);
       }
     } catch (error) {
@@ -82,7 +82,7 @@ const ImagesComponent: React.FC = () => {
   };
 
   const handleRemove = (image: Image) => {
-    imageService.removePhoto(image.id);
+    photosService.removePhoto(image.id);
     const filteredImages = images.filter((x) => x.id !== image.id);
     setImages(filteredImages);
   };

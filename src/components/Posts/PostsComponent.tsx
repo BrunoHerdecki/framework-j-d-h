@@ -8,8 +8,7 @@ import {
   Typography,
   TextField,
 } from "@mui/material";
-import { Post } from "../../services/posts/posts-interfaces";
-import postsService from "../../services/posts/posts-service";
+import postsService, { Post } from "../../services/posts/posts-service";
 import usersService from "../../services/users/users-service";
 
 interface PostsComponentProps {
@@ -35,7 +34,7 @@ const PostsComponent: React.FC<PostsComponentProps> = ({ userIds }) => {
       );
       const postsWithCommentsAndEmails = await Promise.all(
         postsWithComments.map(async (post) => {
-          const user = await usersService.getUserById(post.userId);
+          const user = await usersService.getUserById(post.userId.toString());
           return { ...post, email: user.email };
         })
       );

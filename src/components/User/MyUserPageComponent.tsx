@@ -3,11 +3,30 @@ import PhotosPageComponent from "../Photos/PhotosPageComponent";
 import PostsComponent from "../Posts/PostsComponent";
 import UserDataComponent from "./UserDataComponent";
 import { Button } from "@mui/material";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import usersService, { User } from "../../services/users/users-service";
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
 
 const MyUserPageComponent = () => {
   const [showPhotos, setShowPhotos] = useState(false);
   const [showUserData, setShowUserData] = useState(false);
   const [showPosts, setShowPosts] = useState(false);
+  const [user, setUser] = useState<User>();
+  const query = useQuery();
+
+  useEffect(() => {
+    const userId = query?.get("userId");
+    const fetchData = async () => {
+      const fetchedUser = await usersService.getUserById(userId);
+      if (fetchedUser) {
+        setUser(fetchedUser);
+      }
+    };
+    fetchData();
+  }, []);
 
   const togglePhotos = () => {
     setShowPhotos(!showPhotos);
@@ -48,7 +67,7 @@ const MyUserPageComponent = () => {
       >
         {showPosts ? "Hide Posts" : "Display Posts"}
       </Button>
-      {showPosts && <PostsComponent userIds={[]} />}
+      {showPosts && <PostsComponent userIds={user?.id ? [user.id] : []} />}
     </div>
   );
 };

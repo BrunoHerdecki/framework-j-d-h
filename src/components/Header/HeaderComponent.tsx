@@ -11,7 +11,9 @@ const Header = () => {
   };
 
   const userPage = async () => {
-    navigate(`/myUser`);
+    const params = new URLSearchParams();
+    params.append("userId", userData().id.toString());
+    navigate(`/user?${params.toString()}`);
   };
 
   return (

@@ -3,6 +3,7 @@ import ImagesComponent from "./ImagesComponent";
 import AlbumsComponent from "./AlbumsComponent";
 import { Button, Dialog, DialogContent } from "@mui/material";
 import AddPhotoComponent from "./AddPhotoComponent";
+import SearchComponent from "../Header/SearchBarComponent";
 
 const MainComponent: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -17,6 +18,16 @@ const MainComponent: React.FC = () => {
 
   return (
     <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "30px",
+          marginBottom: "30px",
+        }}
+      >
+        <SearchComponent />
+      </div>
       <div className="margin-20">
         <Button variant="contained" onClick={addImage}>
           Add Image

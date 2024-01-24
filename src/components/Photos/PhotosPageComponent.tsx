@@ -1,36 +1,29 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Button, Grid, Paper } from "@mui/material";
-import imageService from "../../services/images/images-service";
-import albumService from "../../services/albums/album-service";
-import { WidthFull } from "@mui/icons-material";
-
-interface Image {
-  albumId: number;
-  id: number;
-  title: string;
-  url: string;
-  thumbnailUrl: string;
-  fakeDb: boolean;
-}
+import photosService, { Photo } from "../../services/images/photos-service";
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 };
 
 const PhotosPageComponent = () => {
   const query = useQuery();
-  const [photos, setPhotos] = useState<Image[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [displayedPhotoCount, setDisplayedPhotoCount] = useState(10);
 
   useEffect(() => {
     const fetchPhotos = async () => {
-      const queryIds = query.getAll("albumIds").map(Number);
+      const userId = query?.get("userId");
+
+      const queryIds = userId
+        ? await photosService.getUserAlbumIds(userId)
+        : query.getAll("albumIds").map(Number);
       const ids =
         queryIds?.length < 1
-          ? await albumService.getLoggedUserAlbumIds()
+          ? await photosService.getLoggedUserAlbumIds()
           : queryIds;
       try {
-        const response = await imageService.getPhotosByAlbumIds(ids);
+        const response = await photosService.getPhotosByAlbumIds(ids);
         setPhotos(response);
       } catch (error) {
         console.error("Error fetching photos", error);
@@ -40,10 +33,10 @@ const PhotosPageComponent = () => {
     fetchPhotos();
   }, [query]);
 
-  const handleRemove = (image: Image) => {
-    imageService.removePhoto(image.id);
-    const filteredImages = photos.filter((x) => x.id !== image.id);
-    setPhotos(filteredImages);
+  const handleRemove = (Photo: Photo) => {
+    photosService.removePhoto(Photo.id);
+    const filteredPhotos = photos.filter((x) => x.id !== Photo.id);
+    setPhotos(filteredPhotos);
   };
 
   const currentPhotos = photos.slice(0, displayedPhotoCount);

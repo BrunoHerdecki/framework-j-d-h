@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import usersService, { User } from "../../services/users/users-service";
+import { useLocation } from "react-router-dom";
 import {
   Button,
   Card,
@@ -8,15 +9,22 @@ import {
   TextField,
   Grid,
 } from "@mui/material";
-
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
 const UserComponent: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
+  const query = useQuery();
 
   useEffect(() => {
-    const fetchedUser = usersService.getLoggedinUser();
-    if (fetchedUser) {
-      setUser(fetchedUser);
-    }
+    const userId = query?.get("userId");
+    const fetchData = async () => {
+      const fetchedUser = await usersService.getUserById(userId);
+      if (fetchedUser) {
+        setUser(fetchedUser);
+      }
+    };
+    fetchData();
   }, []);
 
   const handleSave = () => {

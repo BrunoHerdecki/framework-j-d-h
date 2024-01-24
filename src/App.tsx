@@ -6,6 +6,7 @@ import PrivateRoute from "./components/Auth/PrivateRoute";
 import MainComponent from "./components/Photos/MainPhotoPageComponent";
 import PhotosPageComponent from "./components/Photos/PhotosPageComponent";
 import MyUserPageComponent from "./components/User/MyUserPageComponent";
+import PhotoComponent from "./components/Photos/PhotoComponent";
 
 const App = () => {
   return (
@@ -31,10 +32,18 @@ const App = () => {
             }
           />
           <Route
-            path="/myUser"
+            path="/user"
             element={
               <PrivateRoute>
                 <MyUserPageComponent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/photo"
+            element={
+              <PrivateRoute>
+                <PhotoComponent />
               </PrivateRoute>
             }
           />

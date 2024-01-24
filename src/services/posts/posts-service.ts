@@ -1,7 +1,6 @@
 import httpService from "../http-service";
 import fakeDbService from "../fakeDatabase/fake-database-service";
 import usersService, { User } from "../users/users-service";
-import { Post, Comment } from "./posts-interfaces";
 
 class PostsService {
   async getPosts(userIds: number[]): Promise<Post[]> {
@@ -91,3 +90,22 @@ class PostsService {
 const postsService = new PostsService();
 
 export default postsService;
+
+export interface Post {
+  userId: number;
+  id: number;
+  title: string;
+  body: string;
+  removable?: boolean;
+  comments: Comment[];
+  email: string;
+}
+
+export interface Comment {
+  postId: number;
+  id: number;
+  name: string;
+  email: string;
+  body: string;
+  removable?: boolean;
+}
