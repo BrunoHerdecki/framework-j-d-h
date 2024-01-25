@@ -19,10 +19,50 @@ class PostsService {
       result = result.concat(userPosts);
     }
 
-    return result;
+    return result.sort((a, b) => b.id - a.id);
   }
 
-  removePost(postId: Number) {}
+  async getAllPosts(): Promise<Post[]> {
+    let result: Post[] = [];
+
+    const dbResponse = await httpService.get(`/posts`);
+    const localResponse: Post[] = (await fakeDbService.get(`posts`)) ?? [];
+
+    this.setIsPostRemovable(localResponse);
+    result = localResponse.concat(dbResponse.data);
+
+    return result.sort((a, b) => b.id - a.id);
+  }
+
+  async addPost(body: string, title: string): Promise<Post> {
+    const user: User = usersService.getLoggedinUser();
+
+    const dbResponse = await httpService.get(`/posts`);
+    const localResponse: Post[] = (await fakeDbService.get(`posts`)) ?? [];
+    const allPosts = dbResponse.data.concat(localResponse);
+
+    const maxId: number = allPosts.reduce(
+      (max: number, obj: Comment) => (obj.id > max ? obj.id : max),
+      allPosts[0].id
+    );
+
+    const post: Post = {
+      id: maxId + 1,
+      title: title,
+      userId: user.id,
+      body: body,
+      comments: [],
+      email: user.email,
+    };
+
+    fakeDbService.post(`posts`, post);
+    post.removable = true;
+    return post;
+  }
+
+  removePost(postId: Number) {
+    fakeDbService.delete(`posts`, postId);
+  }
 
   async addComment(
     postId: number,

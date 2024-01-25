@@ -4,6 +4,7 @@ import AlbumsComponent from "./AlbumsComponent";
 import { Button, Dialog, DialogContent } from "@mui/material";
 import AddPhotoComponent from "./AddPhotoComponent";
 import SearchComponent from "../Header/SearchBarComponent";
+import PostsComponent from "../Posts/PostsComponent";
 
 const MainComponent: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -38,6 +39,8 @@ const MainComponent: React.FC = () => {
       <ImagesComponent />
       <h1 className="title">Albums</h1>
       <AlbumsComponent />
+      <h1 className="title">Posts</h1>
+      <PostsComponent userIds={[]} />
 
       <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
         <DialogContent>

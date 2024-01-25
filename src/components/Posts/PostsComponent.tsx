@@ -17,15 +17,19 @@ interface PostsComponentProps {
 
 const PostsComponent: React.FC<PostsComponentProps> = ({ userIds }) => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [newPost, setNewPost] = useState({ title: "", body: "" });
+  const [displayedPostCount, setDisplayedPostCount] = useState(10);
   const [commentInputs, setCommentInputs] = useState<{
     [key: number]: { name: string; text: string };
   }>({});
 
   useEffect(() => {
     const fetchPostsAndComments = async () => {
-      const userIdsFilter =
-        userIds.length > 0 ? userIds : [usersService.getLoggedinUser().id];
-      const fetchedPosts = await postsService.getPosts(userIdsFilter);
+      const fetchedPosts =
+        userIds.length > 0
+          ? await postsService.getPosts(userIds)
+          : await postsService.getAllPosts();
+
       const postsWithComments = await Promise.all(
         fetchedPosts.map(async (post) => {
           const comments = await postsService.getComments(post.id);
@@ -91,80 +95,138 @@ const PostsComponent: React.FC<PostsComponentProps> = ({ userIds }) => {
     setCommentInputs({ ...commentInputs, [postId]: { name: "", text: "" } });
   };
 
+  const handleNewPostChange = (name: string, value: string) => {
+    setNewPost({ ...newPost, [name]: value });
+  };
+
+  const handleAddNewPost = async () => {
+    const post = await postsService.addPost(newPost.title, newPost.body);
+    setPosts([post, ...posts]);
+    setNewPost({ title: "", body: "" });
+  };
+
+  const currentPosts = posts.slice(0, displayedPostCount);
+
   return (
-    <List>
-      {posts &&
-        posts.map((post) => (
-          <Paper
-            key={post.id}
-            elevation={3}
-            style={{ margin: "10px", padding: "10px" }}
+    <div>
+      {userIds.length === 0 && (
+        <Paper style={{ margin: "10px", padding: "10px" }}>
+          <TextField
+            label="Post Title"
+            variant="outlined"
+            fullWidth
+            value={newPost.title}
+            onChange={(e) => handleNewPostChange("title", e.target.value)}
+            style={{ marginBottom: "10px" }}
+          />
+          <TextField
+            label="Post Body"
+            variant="outlined"
+            fullWidth
+            multiline
+            rows={4}
+            value={newPost.body}
+            onChange={(e) => handleNewPostChange("body", e.target.value)}
+            style={{ marginBottom: "10px" }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddNewPost}
           >
-            <Typography variant="h4">{post.email}:</Typography>
-            <Typography variant="h5">{post.title}</Typography>
-            <Typography variant="body1">{post.body}</Typography>
-            {post.removable && (
-              <Button color="secondary" onClick={() => handleRemovePost(post)}>
-                Remove Post
-              </Button>
-            )}
-            <List>
-              {post.comments &&
-                post.comments.map((comment) => (
-                  <ListItem key={comment.id}>
-                    <ListItemText
-                      primary={
-                        <div>
-                          <Typography>{comment.email}:</Typography>
-                          <Typography>{comment.name}</Typography>
-                        </div>
-                      }
-                      secondary={comment.body}
-                    />
-                    {comment.removable && (
-                      <Button
-                        color="secondary"
-                        onClick={() => handleRemoveComment(comment.id, post.id)}
-                      >
-                        Remove Comment
-                      </Button>
-                    )}
-                  </ListItem>
-                ))}
-            </List>
-            <div>
-              <TextField
-                label="Comment Name"
-                variant="outlined"
-                fullWidth
-                value={commentInputs[post.id]?.name || ""}
-                onChange={(e) =>
-                  handleCommentChange(post.id, "name", e.target.value)
-                }
-                style={{ marginTop: "20px" }}
-              />
-              <TextField
-                label="Comment Body"
-                variant="outlined"
-                fullWidth
-                value={commentInputs[post.id]?.text || ""}
-                onChange={(e) =>
-                  handleCommentChange(post.id, "text", e.target.value)
-                }
-                style={{ marginTop: "10px" }}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                style={{ marginTop: "20px" }}
-                onClick={() => handleSendComment(post.id)}
-              >
-                Send
-              </Button>
-            </div>
-          </Paper>
-        ))}
-    </List>
+            Add Post
+          </Button>
+        </Paper>
+      )}
+      <List>
+        {currentPosts &&
+          currentPosts.map((post) => (
+            <Paper
+              key={post.id}
+              elevation={3}
+              style={{ margin: "10px", padding: "10px" }}
+            >
+              <Typography variant="h4">{post.email}:</Typography>
+              <Typography variant="h5">{post.title}</Typography>
+              <Typography variant="body1">{post.body}</Typography>
+              {post.removable && (
+                <Button
+                  color="secondary"
+                  onClick={() => handleRemovePost(post)}
+                >
+                  Remove Post
+                </Button>
+              )}
+              <List>
+                {post.comments &&
+                  post.comments.map((comment) => (
+                    <ListItem key={comment.id}>
+                      <ListItemText
+                        primary={
+                          <div>
+                            <Typography>{comment.email}:</Typography>
+                            <Typography>{comment.name}</Typography>
+                          </div>
+                        }
+                        secondary={comment.body}
+                      />
+                      {comment.removable && (
+                        <Button
+                          color="secondary"
+                          onClick={() =>
+                            handleRemoveComment(comment.id, post.id)
+                          }
+                        >
+                          Remove Comment
+                        </Button>
+                      )}
+                    </ListItem>
+                  ))}
+              </List>
+              <div>
+                <TextField
+                  label="Comment Name"
+                  variant="outlined"
+                  fullWidth
+                  value={commentInputs[post.id]?.name || ""}
+                  onChange={(e) =>
+                    handleCommentChange(post.id, "name", e.target.value)
+                  }
+                  style={{ marginTop: "20px" }}
+                />
+                <TextField
+                  label="Comment Body"
+                  variant="outlined"
+                  fullWidth
+                  value={commentInputs[post.id]?.text || ""}
+                  onChange={(e) =>
+                    handleCommentChange(post.id, "text", e.target.value)
+                  }
+                  style={{ marginTop: "10px" }}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  style={{ marginTop: "20px" }}
+                  onClick={() => handleSendComment(post.id)}
+                >
+                  Send
+                </Button>
+              </div>
+            </Paper>
+          ))}
+      </List>
+      {posts.length > displayedPostCount && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setDisplayedPostCount(displayedPostCount + 10)}
+          style={{ width: "100%" }}
+        >
+          Show More
+        </Button>
+      )}
+    </div>
   );
 };
 
