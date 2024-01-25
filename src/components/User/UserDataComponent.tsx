@@ -29,7 +29,7 @@ const UserComponent: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [query]);
 
   const handleSave = () => {
     if (user) {

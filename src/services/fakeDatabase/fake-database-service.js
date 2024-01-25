@@ -11,9 +11,13 @@ class FakeDatabaseService {
     localStorage.setItem("db", JSON.stringify(this.db));
   }
 
-  findNextAvailableId(table) {
-    if (this.db[table].length === 0) return 1;
-    return Math.max(...this.db[table].map((item) => item.id)) + 1;
+  findUniqueId(existingObjects, startId) {
+    const existingIds = new Set(existingObjects.map((item) => item.id));
+    let newId = startId;
+    while (existingIds.has(newId)) {
+      newId++;
+    }
+    return newId;
   }
 
   async post(table, object) {
@@ -26,19 +30,12 @@ class FakeDatabaseService {
     let newId = object.id;
 
     if (newId !== undefined) {
-      while (existingObjects.data.find((item) => item.id === newId)) {
-        newId++;
-      }
+      newId = this.findUniqueId(existingObjects.data, newId);
     } else {
-      newId = 1;
-      while (existingObjects.data.find((item) => item.id === newId)) {
-        newId++;
-      }
+      newId = this.findUniqueId(existingObjects.data, 1);
     }
 
-    while (this.db[table].find((item) => item.id === newId)) {
-      newId++;
-    }
+    newId = this.findUniqueId(this.db[table], newId);
 
     const existingIndex = this.db[table].findIndex(
       (item) => item.id === object.id
